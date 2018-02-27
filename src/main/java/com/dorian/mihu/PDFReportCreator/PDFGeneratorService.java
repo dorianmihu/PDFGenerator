@@ -1,5 +1,6 @@
 package com.dorian.mihu.PDFReportCreator;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.BasicJsonParser;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,9 @@ import java.util.Map;
 
 @Service
 public class PDFGeneratorService {
+
+    @Autowired
+    private JasperReportCreator jasperReportCreator;
 
     public void parseIncomingJSON(String json){
         JsonParser jsonParser = new BasicJsonParser();
@@ -22,7 +26,7 @@ public class PDFGeneratorService {
             pdfInformation.setParam3(templateParameters.get("param3"));
         }
        if(pdfInformation!=null){
-            //create Report
+            jasperReportCreator.fillJasperReport(pdfInformation);
        }
     }
 }
