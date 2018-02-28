@@ -1,12 +1,19 @@
 package com.dorian.mihu.PDFReportCreator;
 
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.dorian.mihu.PDFReportCreator.storage.StorageException;
+import com.dorian.mihu.PDFReportCreator.storage.StorageProperties;
 
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
@@ -14,23 +21,36 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 @Component
 public class JasperReportCreator {
 
-    public void fillJasperReport(PDFInformation pdfInformation){
-        String sourceFileName = "C:\\Java_Projects\\PDFGenerator\\jasper_report.jrxml";
-        JasperPrint jasperPrint = null;
-        List<PDFInformation> pdfInformationArrayList = new ArrayList<>();
-        pdfInformationArrayList.add(pdfInformation);
-        JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(pdfInformationArrayList);
-        Map parameters = new HashMap<>();
-        try {
-            JasperReport report = JasperCompileManager.compileReport(sourceFileName);
-            jasperPrint = JasperFillManager.fillReport(report,parameters,beanCollectionDataSource);
+    private Log logger = LogFactory.getLog(getClass());
 
-            if(jasperPrint!=null){
-                JasperExportManager.exportReportToPdfFile(jasperPrint,"C:\\Java_Projects\\PDFGenerator\\"+pdfInformation.getTemplateName()+".pdf");
+    @Autowired
+    private StorageProperties storageProperties;
+
+    public void fillJasperReport(PDFInformation pdfInformation) throws StorageException {
+        String fileName = pdfInformation.getTemplateName()+".jrxml";
+        String sourceFileName = Paths.get(storageProperties.getTemplateLocation(),fileName).toString();
+        if(Paths.get(sourceFileName).toFile().exists()){
+            JasperPrint jasperPrint = null;
+            List<PDFInformation> pdfInformationArrayList = new ArrayList<>();
+            pdfInformationArrayList.add(pdfInformation);
+            JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(pdfInformationArrayList);
+            Map parameters = new HashMap<>();
+            try {
+                JasperReport report = JasperCompileManager.compileReport(sourceFileName);
+                jasperPrint = JasperFillManager.fillReport(report,parameters,beanCollectionDataSource);
+
+                if(jasperPrint!=null){
+                    String destFileName = Paths.get(storageProperties.getExportPDFLocation(),pdfInformation.getTemplateName()+".pdf").toString();
+
+                    JasperExportManager.exportReportToPdfFile(jasperPrint,destFileName);
+                }
+            } catch (JRException e) {
+                logger.error(e.getMessage());
             }
-        } catch (JRException e) {
-            e.printStackTrace();
+        } else {
+            throw new StorageException("No such jasper report template exists: "+sourceFileName);
         }
+
 
     }
 }

@@ -1,5 +1,8 @@
 package com.dorian.mihu.PDFReportCreator;
 
+import com.dorian.mihu.PDFReportCreator.storage.StorageException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.BasicJsonParser;
 import org.springframework.boot.json.JsonParser;
@@ -13,7 +16,9 @@ public class PDFGeneratorService {
     @Autowired
     private JasperReportCreator jasperReportCreator;
 
-    public void parseIncomingJSON(String json){
+    private Log logger = LogFactory.getLog(getClass());
+
+    public void parseIncomingJSON(String json) {
         JsonParser jsonParser = new BasicJsonParser();
         Map<String,Object> jsonParameters = jsonParser.parseMap(json);
         PDFInformation pdfInformation = null;
@@ -26,7 +31,12 @@ public class PDFGeneratorService {
             pdfInformation.setParam3(templateParameters.get("param3"));
         }
        if(pdfInformation!=null){
-            jasperReportCreator.fillJasperReport(pdfInformation);
+            try{
+                jasperReportCreator.fillJasperReport(pdfInformation);
+            } catch (StorageException ex){
+                logger.error(ex.getMessage());
+            }
+
        }
     }
 }
