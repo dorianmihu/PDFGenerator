@@ -1,6 +1,8 @@
 package com.dorian.mihu.PDFReportCreator;
 
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,10 +43,14 @@ public class JasperReportCreator {
 
                 if(jasperPrint!=null){
                     String destFileName = Paths.get(storageProperties.getExportPDFLocation(),pdfInformation.getTemplateName()+".pdf").toString();
-
+                    if(Paths.get(destFileName).toFile().exists()){
+                        Files.delete(Paths.get(destFileName));
+                    }
                     JasperExportManager.exportReportToPdfFile(jasperPrint,destFileName);
                 }
             } catch (JRException e) {
+                logger.error(e.getMessage());
+            } catch (IOException e) {
                 logger.error(e.getMessage());
             }
         } else {
