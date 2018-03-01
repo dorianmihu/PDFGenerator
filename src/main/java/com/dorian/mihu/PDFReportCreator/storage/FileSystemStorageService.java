@@ -52,10 +52,10 @@ public class FileSystemStorageService implements StorageService {
     @Override
     public void init() throws StorageException {
         try {
-            if(templaterootLocation.toFile().exists()) {
+            if(!templaterootLocation.toFile().isDirectory()) {
                 Files.createDirectories(templaterootLocation);
             }
-            if(exportLocation.toFile().exists()) {
+            if(!exportLocation.toFile().isDirectory()) {
                 Files.createDirectories(exportLocation);
             }
         }
