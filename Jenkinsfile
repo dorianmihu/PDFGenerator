@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                sh 'sudo mvn clean install dockerfile:build'
+                sh 'mvn clean install'
             }
         }
     }
